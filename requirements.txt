@@ -1,0 +1,8 @@
+aio_pika==9.1.4
+aiormq==6.7.7
+aiohttp==3.8.5
+telethon==1.28.5
+cryptg==0.4.0
+python-dotenv==1.0.0
+pytz==2023.3
+uvloop==0.17.0; sys_platform != 'win32'
