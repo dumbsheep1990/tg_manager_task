@@ -1,91 +1,88 @@
-# TG Marketing System - Python Worker Component
+# TG营销系统 - Python工作节点组件
 
-## Overview
 
-This is the Python Worker component of the TG Marketing System, responsible for executing Telegram operations via the Telethon library. The worker communicates with the Golang API backend through RabbitMQ, receiving tasks and sending back results.
+## 功能实现（2025-05-11）
 
-## Features
+- **任务处理**: 处理各种Telegram操作，包括发送消息、加入/退出群组、添加联系人等
+- **分布式架构**: 可以水平扩展以并行处理多个任务
+- **RabbitMQ集成**: 通过消息队列与Golang后端通信
+- **Telegram集成**: 使用Telethon与Telegram的API交互
 
-- **Task Processing**: Handles various Telegram operations including sending messages, joining/leaving groups, adding contacts, etc.
-- **Distributed Architecture**: Can be scaled horizontally to handle multiple tasks in parallel
-- **RabbitMQ Integration**: Communicates with the Golang backend via message queues
-- **Telegram Integration**: Uses Telethon to interact with Telegram's API
-
-## Directory Structure
+## 目录结构
 
 ```
 tg_manager_task/
-├── config/               # Configuration settings
-│   └── settings.py       # System configuration
-├── telegram/             # Telegram operations
-│   ├── client.py         # Telegram client wrapper
-│   └── task_executor.py  # Task execution logic
-├── utils/                # Utility modules
-│   ├── api_client.py     # HTTP client for API communication
-│   └── rabbitmq_client.py # RabbitMQ client
-├── main.py               # Main entry point
-└── requirements.txt      # Python dependencies
+├── config/               # 配置设置
+│   └── settings.py       # 系统配置
+├── telegram/             # Telegram操作
+│   ├── client.py         # Telegram客户端封装
+│   └── task_executor.py  # 任务执行逻辑
+├── utils/                # 工具模块
+│   ├── api_client.py     # 用于API通信的HTTP客户端
+│   └── rabbitmq_client.py # RabbitMQ客户端
+├── main.py               # 主入口点
+└── requirements.txt      # Python依赖包
 ```
 
-## Supported Task Types
+## 支持的任务类型
 
-1. **send_message**: Send a message to an individual or group
-2. **join_group**: Join a Telegram group or channel
-3. **leave_group**: Leave a Telegram group or channel
-4. **add_contact**: Add a contact to the address book
-5. **check_account**: Check account status/health
-6. **extract_members**: Extract members from a group
+1. **send_message**: 向个人或群组发送消息
+2. **join_group**: 加入Telegram群组或频道
+3. **leave_group**: 退出Telegram群组或频道
+4. **add_contact**: 添加联系人到地址簿
+5. **check_account**: 检查账号状态/健康状况
+6. **extract_members**: 从群组中提取成员
 
-## Installation
+## 安装
 
-1. Install dependencies:
+1. 安装依赖包：
 ```bash
 pip install -r requirements.txt
 ```
 
-2. Configure environment variables or edit `config/settings.py`:
+2. 配置环境变量或编辑 `config/settings.py`：
 ```bash
-# Required Telegram API credentials
+# 必需的Telegram API凭证
 export TELEGRAM_API_ID=your_api_id
 export TELEGRAM_API_HASH=your_api_hash
 
-# RabbitMQ connection
+# RabbitMQ连接
 export RABBITMQ_URL=amqp://guest:guest@localhost:5672/
 
-# API connection
+# API连接
 export API_BASE_URL=http://localhost:8080/api/v1
 ```
 
-3. Run the worker:
+3. 运行工作节点：
 ```bash
 python main.py
 ```
 
-## Worker Registration Process
+## 工作节点注册流程
 
-1. The worker registers with the API on startup
-2. It receives a unique worker_id
-3. It begins sending heartbeats to the API
-4. It starts consuming tasks from RabbitMQ
-5. Task results are sent back to the API via RabbitMQ
+1. 工作节点在启动时注册到API
+2. 它接收一个唯一的worker_id
+3. 它开始向API发送心跳
+4. 它开始从RabbitMQ消费任务
+5. 任务结果通过RabbitMQ发送回API
 
-## Integration with Golang Backend
+## 与Golang后端集成
 
-The worker integrates with the Golang backend through:
+工作节点通过以下方式与Golang后端集成：
 
-1. RabbitMQ for task distribution and result reporting
-2. REST API calls for worker registration and heartbeats
-3. Shared task status via task records in the database
+1. 使用RabbitMQ进行任务分发和结果报告
+2. 使用REST API调用进行工作节点注册和心跳检测
+3. 通过数据库中的任务记录共享任务状态
 
-## Deployment
+## 部署
 
-The worker can be deployed using Docker for easy scaling:
+工作节点可以使用Docker进行部署，便于扩展：
 
 ```bash
-# Build Docker image
+# 构建Docker镜像
 docker build -t tg-worker .
 
-# Run container
+# 运行容器
 docker run -d --name tg-worker-1 \
   -e TELEGRAM_API_ID=your_api_id \
   -e TELEGRAM_API_HASH=your_api_hash \
