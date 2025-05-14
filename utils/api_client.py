@@ -7,7 +7,8 @@
 
 import json
 import logging
-from typing import Dict, Any, Optional, Union
+import socket
+from typing import Dict, Any, Optional, Union, List, Tuple
 
 import aiohttp
 
@@ -163,3 +164,90 @@ class ApiClient:
             JSON response data
         """
         return await self.request("DELETE", endpoint, params=params)
+    
+    # Worker-specific API methods
+    
+    async def register_worker(self, hostname: str = None, max_tasks: int = 10, 
+                             tags: str = "telegram,python", version: str = "1.0.0") -> Tuple[bool, str]:
+        """
+        Register this worker with the API
+        
+        Args:
+            hostname: Worker hostname (default: system hostname)
+            max_tasks: Maximum number of concurrent tasks (default: 10)
+            tags: Worker tags (comma-separated)
+            version: Worker version
+            
+        Returns:
+            Tuple of (success, worker_id)
+        """
+        # Get system hostname if not provided
+        if hostname is None:
+            hostname = socket.gethostname()
+            
+        # Get local IP address
+        try:
+            ip = socket.gethostbyname(hostname)
+        except:
+            ip = "127.0.0.1"
+            
+        # Prepare registration data
+        registration_data = {
+            "hostname": hostname,
+            "ip": ip,
+            "max_tasks": max_tasks,
+            "tags": tags,
+            "version": version
+        }
+        
+        # Make registration request
+        response = await self.post("/api/v1/workers/register", json=registration_data)
+        
+        if response.get("success", False):
+            worker_id = response.get("data")
+            logger.info(f"Worker registered successfully with ID: {worker_id}")
+            return True, worker_id
+        else:
+            logger.error(f"Worker registration failed: {response.get('message')}")
+            return False, ""
+    
+    async def send_heartbeat(self, worker_id: str) -> bool:
+        """
+        Send a heartbeat to the API to indicate worker is still alive
+        
+        Args:
+            worker_id: Worker ID from registration
+            
+        Returns:
+            True if heartbeat successful, False otherwise
+        """
+        heartbeat_data = {
+            "worker_id": worker_id
+        }
+        
+        response = await self.post("/api/v1/workers/heartbeat", json=heartbeat_data)
+        
+        if response.get("success", False):
+            logger.debug(f"Heartbeat sent successfully for worker {worker_id}")
+            return True
+        else:
+            logger.warning(f"Heartbeat failed: {response.get('message')}")
+            return False
+            
+    async def get_account_info(self, account_id: int) -> Dict[str, Any]:
+        """
+        Get account information from the API
+        
+        Args:
+            account_id: Account ID
+            
+        Returns:
+            Account information dictionary
+        """
+        response = await self.get(f"/api/v1/accounts/{account_id}")
+        
+        if response.get("success", False):
+            return response.get("data", {})
+        else:
+            logger.error(f"Failed to get account info: {response.get('message')}")
+            return {}

@@ -6,6 +6,7 @@
 import os
 from pathlib import Path
 import logging
+from typing import Dict, Any, NamedTuple, Optional
 
 # 基础目录
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,6 +23,7 @@ WORKER_SETTINGS = {
     'max_tasks': int(os.environ.get('WORKER_MAX_TASKS', 10)),
     'tags': os.environ.get('WORKER_TAGS', 'telegram,task'),
     'version': '1.0.0',
+    'heartbeat_interval': int(os.environ.get('WORKER_HEARTBEAT_INTERVAL', 30)),  # 心跳间隔（秒）
 }
 
 # RabbitMQ设置
@@ -43,7 +45,6 @@ RABBITMQ = {
         'system': 'system.#',
     },
 }
-
 # API设置
 API = {
     'base_url': os.environ.get('API_BASE_URL', 'http://localhost:8080/api/v1'),
